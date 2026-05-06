@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Owner's Report</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1e293b; }
+    .page { max-width: 900px; margin: 0 auto; padding: 32px 16px 48px; }
+
+    .header {
+      background: #1e3a5f;
+      border-radius: 8px 8px 0 0;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-icon {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 22px; flex-shrink: 0;
+    }
+    .header h1 { color: #fff; font-size: 24px; font-weight: 700; line-height: 1.2; }
+    .header p  { color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 3px; }
+
+    .form-body {
+      background: #fff;
+      border: 1px solid #dde1e7;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .field-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .field-single { max-width: 50%; margin-bottom: 4px; }
+    .field label  { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.07em; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
+    .field input  {
+      width: 100%; height: 38px;
+      border: 1px solid #dde1e7; border-radius: 6px;
+      padding: 0 12px; font-size: 14px; color: #1e293b;
+      background: #fff; outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    .field input:focus { border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,0.1); }
+    .field input::placeholder { color: #c1c9d4; }
+
+    .section {
+      background: #fff;
+      border: 1px solid #dde1e7;
+      border-radius: 8px;
+      padding: 22px 28px;
+      margin-bottom: 16px;
+    }
+    .section-title { font-size: 16px; font-weight: 700; color: #1e3a5f; margin-bottom: 5px; }
+    .section-sub   { font-size: 12px; color: #94a3b8; margin-bottom: 14px; line-height: 1.6; }
+    .section textarea {
+      width: 100%; min-height: 96px;
+      border: 1px solid #dde1e7; border-radius: 6px;
+      padding: 10px 14px; font-size: 14px; color: #1e293b;
+      background: #fff; resize: vertical; font-family: inherit; outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .section textarea:focus { border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,0.1); }
+    .section textarea::placeholder { color: #c1c9d4; }
+
+    /* KPI Table */
+    .kpi-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    .kpi-table thead tr { background: #1e3a5f; }
+    .kpi-table thead th {
+      color: #fff; font-weight: 600; font-size: 11px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 11px 10px; text-align: left;
+    }
+    .kpi-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .1s; }
+    .kpi-table tbody tr:hover { background: #f8fafc; }
+    .kpi-table tbody td { padding: 8px 8px; }
+    .kpi-table td:first-child { font-weight: 500; color: #334155; }
+    .kpi-table input[type=text] {
+      width: 100%; height: 30px;
+      border: 1px solid #e2e8f0; border-radius: 4px;
+      padding: 0 8px; font-size: 12px; background: #fff; color: #1e293b; outline: none;
+    }
+    .kpi-table input[type=text]:focus { border-color: #1e3a5f; }
+    .kpi-table select {
+      width: 100%; height: 30px;
+      border: 1px solid #e2e8f0; border-radius: 4px;
+      padding: 0 4px; font-size: 12px; background: #fff; color: #1e293b; outline: none;
+    }
+    .kpi-table select:focus { border-color: #1e3a5f; }
+    .col-cat    { width: 26%; }
+    .col-sm     { width: 10%; }
+    .col-status { width: 15%; }
+    .col-notes  { width: 19%; }
+
+    /* Action Table */
+    .action-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .action-table thead tr { background: #1e3a5f; }
+    .action-table thead th {
+      color: #fff; font-weight: 600; font-size: 11px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 11px 10px; text-align: left;
+    }
+    .action-table tbody tr { border-bottom: 1px solid #f1f5f9; }
+    .action-table tbody td { padding: 7px 8px; }
+    .action-table input, .action-table select {
+      width: 100%; height: 30px;
+      border: 1px solid #e2e8f0; border-radius: 4px;
+      padding: 0 8px; font-size: 12px; background: #fff; color: #1e293b; outline: none;
+    }
+    .action-table input:focus, .action-table select:focus { border-color: #1e3a5f; }
+    .col-action { width: 38%; }
+    .col-owner  { width: 22%; }
+    .col-date   { width: 20%; }
+    .col-stat   { width: 20%; }
+
+    .add-row-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 14px; padding: 7px 16px;
+      border: 1px solid #1e3a5f; border-radius: 6px;
+      background: transparent; color: #1e3a5f;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      transition: background .15s;
+    }
+    .add-row-btn:hover { background: #f0f4fa; }
+
+    .btn-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px; background: #1e3a5f; color: #fff;
+      border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-primary:hover { background: #16304f; }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px; background: transparent; color: #64748b;
+      border: 1px solid #dde1e7; border-radius: 6px;
+      font-size: 14px; font-weight: 500; cursor: pointer; transition: background .15s;
+    }
+    .btn-ghost:hover { background: #f8fafc; }
+
+    .footer-note { text-align: center; font-size: 12px; color: #94a3b8; padding-top: 20px; }
+
+    @media (max-width: 600px) {
+      .field-grid { grid-template-columns: 1fr; }
+      .field-single { max-width: 100%; }
+      .kpi-table, .action-table { font-size: 11px; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .page { padding: 0; }
+      .btn-bar, .add-row-btn { display: none; }
+      .section, .form-body { border: 1px solid #ccc; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon"><i class="ti ti-building"></i></div>
+    <div>
+      <h1>Monthly Owner's Report</h1>
+      <p>Multifamily Property Performance Summary</p>
+    </div>
+  </div>
+
+  <!-- Top fields -->
+  <div class="form-body">
+    <div class="field-grid">
+      <div class="field"><label>Property Name</label><input type="text" placeholder="e.g., The Reserve at Plano"></div>
+      <div class="field"><label>Regional Manager</label><input type="text" placeholder="Full name"></div>
+      <div class="field"><label>Report Period</label><input type="text" placeholder="e.g., April 2026"></div>
+      <div class="field"><label>Date Submitted</label><input type="date" id="dateSubmitted"></div>
+    </div>
+    <div class="field-single">
+      <div class="field"><label>Total Units</label><input type="text" placeholder="e.g., 212"></div>
+    </div>
+  </div>
+
+  <!-- Executive Summary -->
+  <div class="section">
+    <div class="section-title">Executive Summary</div>
+    <div class="section-sub">Provide a high-level overview of property performance, key wins, and notable challenges for the reporting period.</div>
+    <textarea placeholder="Provide a high-level overview of property performance, key wins, and notable challenges for the reporting period..."></textarea>
+  </div>
+
+  <!-- KPI Scorecard -->
+  <div class="section">
+    <div class="section-title">KPI Performance Scorecard</div>
+    <div class="section-sub">Track budget vs. actual for each key performance indicator. Select a status to color-code the row.</div>
+    <table class="kpi-table">
+      <thead>
+        <tr>
+          <th class="col-cat">KPI Category</th>
+          <th class="col-sm">Budget / Goal</th>
+          <th class="col-sm">Actual</th>
+          <th class="col-sm">Variance</th>
+          <th class="col-status">Status</th>
+          <th class="col-notes">Comments</th>
+        </tr>
+      </thead>
+      <tbody id="kpiBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Performance Drivers -->
+  <div class="section">
+    <div class="section-title">Performance Drivers</div>
+    <div class="section-sub">What factors contributed most to this month's results? Highlight wins, effective strategies, and market conditions.</div>
+    <textarea placeholder="Describe key factors driving performance this month..."></textarea>
+  </div>
+
+  <!-- Risks & Concerns -->
+  <div class="section">
+    <div class="section-title">Risks & Concerns</div>
+    <div class="section-sub">Identify current and emerging risks including market shifts, staffing, maintenance, regulatory, or resident satisfaction issues.</div>
+    <textarea placeholder="Outline risks and concerns requiring attention..."></textarea>
+  </div>
+
+  <!-- Action Plans -->
+  <div class="section">
+    <div class="section-title">Action Plans & Mitigation</div>
+    <div class="section-sub">Detail specific action items to address underperformance or risks. Include responsible parties and target dates.</div>
+    <table class="action-table">
+      <thead>
+        <tr>
+          <th class="col-action">Action Item</th>
+          <th class="col-owner">Owner / Responsible</th>
+          <th class="col-date">Target Date</th>
+          <th class="col-stat">Status</th>
+        </tr>
+      </thead>
+      <tbody id="actionBody"></tbody>
+    </table>
+    <button class="add-row-btn" onclick="addActionRow()"><i class="ti ti-plus"></i> Add Row</button>
+  </div>
+
+  <!-- Next Month Goals -->
+  <div class="section">
+    <div class="section-title">Next-Month Goals & Strategy</div>
+    <div class="section-sub">Set specific, measurable goals for the upcoming month across leasing, operations, and financial performance.</div>
+    <textarea placeholder="Define goals and strategic priorities for next month..."></textarea>
+  </div>
+
+  <!-- Additional Notes -->
+  <div class="section">
+    <div class="section-title">Additional Notes</div>
+    <div class="section-sub">Any supplementary information, comments, or updates not covered above.</div>
+    <textarea placeholder="Any other comments, updates, or supplementary information..."></textarea>
+  </div>
+
+  <!-- Buttons -->
+  <div class="btn-bar">
+    <button class="btn-primary" onclick="window.print()"><i class="ti ti-printer"></i> Print Report</button>
+    <button class="btn-primary" onclick="saveDraft()"><i class="ti ti-device-floppy"></i> Save Draft</button>
+    <button class="btn-ghost" onclick="clearAll()"><i class="ti ti-x"></i> Clear All Fields</button>
+  </div>
+
+  <p class="footer-note">Made with Claude</p>
+</div>
+
+<script>
+const kpiRows = [
+  "Occupancy (%)", "Prelease (%)", "Traffic (visits)", "Leases (count)",
+  "Net Absorption (units)", "Delinquency (%)", "Collections (%)",
+  "Work Orders (completed)", "Make Ready (units)", "NOI vs Budget ($)"
+];
+const statuses = ["Select", "On Track", "At Risk", "Below Target", "Exceeds Goal", "N/A"];
+const statusColors = {
+  "On Track":     "#f0fdf4",
+  "Exceeds Goal": "#eff6ff",
+  "At Risk":      "#fffbeb",
+  "Below Target": "#fef2f2",
+  "N/A":          "",
+  "Select":       ""
+};
+
+function buildKPI() {
+  const tb = document.getElementById('kpiBody');
+  tb.innerHTML = kpiRows.map(r => `
+    <tr>
+      <td>${r}</td>
+      <td><input type="text" placeholder="—"></td>
+      <td><input type="text" placeholder="—"></td>
+      <td><input type="text" placeholder="—"></td>
+      <td>
+        <select onchange="colorRow(this)">
+          ${statuses.map(s => `<option value="${s}">${s}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="text" placeholder="Notes..."></td>
+    </tr>`).join('');
+}
+
+function colorRow(sel) {
+  sel.closest('tr').style.background = statusColors[sel.value] || '';
+}
+
+function addActionRow() {
+  const tb = document.getElementById('actionBody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" placeholder="Describe action item..."></td>
+    <td><input type="text" placeholder="Name"></td>
+    <td><input type="date"></td>
+    <td>
+      <select>
+        <option>Not Started</option>
+        <option>In Progress</option>
+        <option>Complete</option>
+        <option>On Hold</option>
+      </select>
+    </td>`;
+  tb.appendChild(tr);
+}
+
+function saveDraft() {
+  const data = {};
+  document.querySelectorAll('input, textarea, select').forEach((el, i) => {
+    data['field_' + i] = el.value;
+  });
+  localStorage.setItem('ownerReportDraft', JSON.stringify(data));
+  alert('Draft saved successfully!');
+}
+
+function loadDraft() {
+  const saved = localStorage.getItem('ownerReportDraft');
+  if (!saved) return;
+  const data = JSON.parse(saved);
+  const fields = document.querySelectorAll('input, textarea, select');
+  fields.forEach((el, i) => {
+    if (data['field_' + i] !== undefined) el.value = data['field_' + i];
+    if (el.tagName === 'SELECT') {
+      el.dispatchEvent(new Event('change'));
+    }
+  });
+}
+
+function clearAll() {
+  if (confirm('Clear all fields? This cannot be undone.')) {
+    document.querySelectorAll('input[type=text], textarea').forEach(el => el.value = '');
+    document.querySelectorAll('input[type=date]').forEach(el => el.value = '');
+    document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+    document.querySelectorAll('tbody tr').forEach(tr => tr.style.background = '');
+    document.getElementById('dateSubmitted').value = new Date().toISOString().split('T')[0];
+    localStorage.removeItem('ownerReportDraft');
+  }
+}
+
+// Init
+document.getElementById('dateSubmitted').value = new Date().toISOString().split('T')[0];
+buildKPI();
+for (let i = 0; i < 5; i++) addActionRow();
+loadDraft();
+</script>
+</body>
+</html>
