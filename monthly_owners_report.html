@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,6 +48,14 @@
     }
     .field input:focus { border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,0.1); }
     .field input::placeholder { color: #c1c9d4; }
+    .field select {
+      width: 100%; height: 38px;
+      border: 1px solid #dde1e7; border-radius: 6px;
+      padding: 0 12px; font-size: 14px; color: #1e293b;
+      background: #fff; outline: none; transition: border-color .15s, box-shadow .15s;
+      cursor: pointer;
+    }
+    .field select:focus { border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,0.1); }
 
     .section {
       background: #fff;
@@ -174,13 +183,37 @@
   <!-- Top fields -->
   <div class="form-body">
     <div class="field-grid">
-      <div class="field"><label>Property Name</label><input type="text" placeholder="e.g., The Reserve at Plano"></div>
-      <div class="field"><label>Regional Manager</label><input type="text" placeholder="Full name"></div>
+      <div class="field">
+        <label>Property Name</label>
+        <select id="propertySelect" onchange="onPropertyChange()">
+          <option value="" data-units="" data-manager="">— Select a property —</option>
+          <option value="Arbor Creek" data-units="280" data-manager="Sandra">Arbor Creek</option>
+          <option value="Arlington Hills" data-units="171" data-manager="Jessica">Arlington Hills</option>
+          <option value="Bella Vista" data-units="400" data-manager="Sandra">Bella Vista</option>
+          <option value="Boot Ranch" data-units="432" data-manager="Guillermo">Boot Ranch</option>
+          <option value="Champions Centre" data-units="192" data-manager="Jennifer">Champions Centre</option>
+          <option value="Champions Park" data-units="246" data-manager="Jennifer">Champions Park</option>
+          <option value="Enclave at Prestonwood" data-units="466" data-manager="Sandra">Enclave at Prestonwood</option>
+          <option value="Grand Palms" data-units="312" data-manager="Jennifer">Grand Palms</option>
+          <option value="Loreto Apartment Homes" data-units="246" data-manager="Sandra">Loreto Apartment Homes</option>
+          <option value="Pelican Lake" data-units="183" data-manager="Guillermo">Pelican Lake</option>
+          <option value="Prestonwood Apartments Homes" data-units="194" data-manager="Sandra">Prestonwood Apartments Homes</option>
+          <option value="Sedona Park" data-units="282" data-manager="Jessica">Sedona Park</option>
+          <option value="Sunset Place" data-units="310" data-manager="Jessica">Sunset Place</option>
+          <option value="Talcott at Windermere" data-units="340" data-manager="Guillermo">Talcott at Windermere</option>
+          <option value="THE CARMEL" data-units="492" data-manager="Sandra">THE CARMEL</option>
+          <option value="Venue at Winter Park" data-units="432" data-manager="Guillermo">Venue at Winter Park</option>
+          <option value="Westgate &amp; Glen Arbor" data-units="576" data-manager="Jessica">Westgate &amp; Glen Arbor</option>
+          <option value="Willow Park" data-units="320" data-manager="Guillermo">Willow Park</option>
+          <option value="Windrift Apartment Homes" data-units="288" data-manager="Guillermo">Windrift Apartment Homes</option>
+        </select>
+      </div>
+      <div class="field"><label>Regional Manager</label><input type="text" id="regionalManager" placeholder="Auto-filled when property is selected" readonly></div>
       <div class="field"><label>Report Period</label><input type="text" placeholder="e.g., April 2026"></div>
       <div class="field"><label>Date Submitted</label><input type="date" id="dateSubmitted"></div>
     </div>
     <div class="field-single">
-      <div class="field"><label>Total Units</label><input type="text" placeholder="e.g., 212"></div>
+      <div class="field"><label>Total Units</label><input type="text" id="totalUnits" placeholder="Auto-filled when property is selected" readonly></div>
     </div>
   </div>
 
@@ -281,6 +314,13 @@ const statusColors = {
   "N/A":          "",
   "Select":       ""
 };
+
+function onPropertyChange() {
+  const sel = document.getElementById('propertySelect');
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('totalUnits').value = opt.getAttribute('data-units') || '';
+  document.getElementById('regionalManager').value = opt.getAttribute('data-manager') || '';
+}
 
 function buildKPI() {
   const tb = document.getElementById('kpiBody');
