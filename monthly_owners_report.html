@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -314,11 +315,30 @@ async function loadSheetData() {
   try {
     const resp = await fetch(SHEET_CSV_URL);
     const text = await resp.text();
-    const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+    const rows = text.trim().split('\n').map(r => parseCSVRow(r));
     sheetData = rows.slice(1); // skip header
   } catch(e) {
     console.warn('Could not load sheet data:', e);
   }
+}
+
+function parseCSVRow(row) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < row.length; i++) {
+    const ch = row[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current.trim());
+  return result;
 }
 
 function normalizeDate(d) {
