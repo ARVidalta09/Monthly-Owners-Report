@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -380,12 +379,20 @@ function populateKPIFromSheet() {
     const actualVal = row[mapping.actual] || '';
     tr.cells[1].querySelector('input').value = budgetVal;
     tr.cells[2].querySelector('input').value = actualVal;
-    // Auto-calculate variance if both values are present
+    // Auto-calculate variance (Actual - Budget)
+    const hasPercent = budgetVal.includes('%') || actualVal.includes('%');
+    const hasDollar  = budgetVal.includes('$') || actualVal.includes('$');
     const b = parseFloat(budgetVal.replace(/[%$,]/g, ''));
     const a = parseFloat(actualVal.replace(/[%$,]/g, ''));
     if (!isNaN(b) && !isNaN(a)) {
-      const variance = (a - b).toFixed(2);
-      tr.cells[3].querySelector('input').value = variance;
+      const diff = (a - b).toFixed(2);
+      const sign = diff > 0 ? '+' : '';
+      const varianceInput = tr.cells[3].querySelector('input');
+      varianceInput.value = hasDollar
+        ? `${diff >= 0 ? '+' : ''}$${Math.abs(diff).toLocaleString()}`
+        : `${sign}${diff}${hasPercent ? '%' : ''}`;
+      varianceInput.style.color = parseFloat(diff) < 0 ? '#dc2626' : '#16a34a';
+      varianceInput.style.fontWeight = '600';
     }
   });
 }
