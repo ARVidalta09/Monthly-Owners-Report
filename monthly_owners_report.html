@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -209,8 +208,8 @@
         </select>
       </div>
       <div class="field"><label>Regional Manager</label><input type="text" id="regionalManager" placeholder="Auto-filled when property is selected" readonly></div>
-      <div class="field"><label>Report Period</label><input type="text" placeholder="e.g., April 2026"></div>
-      <div class="field"><label>Date Submitted</label><input type="date" id="dateSubmitted"></div>
+      <div class="field"><label>Report Period</label><input type="text" id="reportPeriod" placeholder="Auto-filled from date submitted" readonly></div>
+      <div class="field"><label>Date Submitted</label><input type="date" id="dateSubmitted" onchange="updateReportPeriod()"></div>
     </div>
     <div class="field-single">
       <div class="field"><label>Total Units</label><input type="text" id="totalUnits" placeholder="Auto-filled when property is selected" readonly></div>
@@ -300,6 +299,77 @@
 </div>
 
 <script>
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9PuKf8LDqujoNvN69mG0F98pdesYpu4l2rO1XaFJ8od2lBjgqg7lN46q1xeCweH8cLnd2_S4U5Zyu/pub?gid=0&single=true&output=csv';
+
+// Sheet columns (0-indexed): A=Property, B=Unit, C=Month, D=Occupancy Actual, E=Occupancy Budget, F=Regional Manager, G=NOI Actual, H=NOI Budget, I=Delinquency Budget, J=Delinquency Actuals
+const KPI_MAP = {
+  "Occupancy (%)":      { budget: 4, actual: 3 },   // E=budget, D=actual
+  "NOI vs Budget ($)":  { budget: 7, actual: 6 },   // H=budget, G=actual
+  "Delinquency (%)":    { budget: 8, actual: 9 },   // I=budget, J=actual
+};
+
+let sheetData = [];
+
+async function loadSheetData() {
+  try {
+    const resp = await fetch(SHEET_CSV_URL);
+    const text = await resp.text();
+    const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+    sheetData = rows.slice(1); // skip header
+  } catch(e) {
+    console.warn('Could not load sheet data:', e);
+  }
+}
+
+function normalizeDate(d) {
+  d = d.trim().replace(/^"|"$/g, '');
+  if (d.includes('-')) {
+    const [y, m, day] = d.split('-');
+    return `${parseInt(m)}/${parseInt(day)}/${y}`;
+  }
+  const parts = d.split('/');
+  if (parts.length === 3) return `${parseInt(parts[0])}/${parseInt(parts[1])}/${parts[2]}`;
+  return d;
+}
+
+function getSheetRow(propertyName, reportPeriod) {
+  const normPeriod = normalizeDate(reportPeriod);
+  console.log('Looking for:', propertyName, '| period:', normPeriod);
+  console.log('Sheet rows (property | month):', sheetData.map(r => r[0] + ' | ' + normalizeDate(r[2])));
+  return sheetData.find(row => {
+    const propMatch = row[0].trim().toLowerCase() === propertyName.trim().toLowerCase();
+    const monthMatch = normalizeDate(row[2]) === normPeriod;
+    return propMatch && monthMatch;
+  });
+}
+
+function populateKPIFromSheet() {
+  const property = document.getElementById('propertySelect').value;
+  const period   = document.getElementById('reportPeriod').value;
+  if (!property || !period || sheetData.length === 0) return;
+
+  const row = getSheetRow(property, period);
+  if (!row) return;
+
+  const rows = document.querySelectorAll('#kpiBody tr');
+  rows.forEach(tr => {
+    const kpiName = tr.cells[0].textContent.trim();
+    const mapping = KPI_MAP[kpiName];
+    if (!mapping) return;
+    const budgetVal = row[mapping.budget] || '';
+    const actualVal = row[mapping.actual] || '';
+    tr.cells[1].querySelector('input').value = budgetVal;
+    tr.cells[2].querySelector('input').value = actualVal;
+    // Auto-calculate variance if both values are present
+    const b = parseFloat(budgetVal.replace(/[%$,]/g, ''));
+    const a = parseFloat(actualVal.replace(/[%$,]/g, ''));
+    if (!isNaN(b) && !isNaN(a)) {
+      const variance = (a - b).toFixed(2);
+      tr.cells[3].querySelector('input').value = variance;
+    }
+  });
+}
+
 const kpiRows = [
   "Occupancy (%)", "Prelease (%)", "Traffic (visits)", "Leases (count)",
   "Net Absorption (units)", "Delinquency (%)", "Collections (%)",
@@ -320,6 +390,7 @@ function onPropertyChange() {
   const opt = sel.options[sel.selectedIndex];
   document.getElementById('totalUnits').value = opt.getAttribute('data-units') || '';
   document.getElementById('regionalManager').value = opt.getAttribute('data-manager') || '';
+  populateKPIFromSheet();
 }
 
 function buildKPI() {
@@ -394,11 +465,24 @@ function clearAll() {
   }
 }
 
+function updateReportPeriod() {
+  const val = document.getElementById('dateSubmitted').value;
+  if (!val) return;
+  const date = new Date(val + 'T00:00:00');
+  const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  const month = lastDay.getMonth() + 1;
+  const day = lastDay.getDate();
+  const year = lastDay.getFullYear();
+  document.getElementById('reportPeriod').value = `${month}/${day}/${year}`;
+  populateKPIFromSheet();
+}
+
 // Init
-document.getElementById('dateSubmitted').value = new Date().toISOString().split('T')[0];
 buildKPI();
 for (let i = 0; i < 5; i++) addActionRow();
-loadDraft();
+document.getElementById('dateSubmitted').value = new Date().toISOString().split('T')[0];
+updateReportPeriod();
+loadSheetData().then(() => loadDraft());
 </script>
 </body>
 </html>
